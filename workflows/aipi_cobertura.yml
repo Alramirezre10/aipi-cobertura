@@ -1,4 +1,3 @@
-
 name: AIPI Cobertura
 
 on:
@@ -14,10 +13,10 @@ jobs:
       TENANT_ID: ${{ secrets.TENANT_ID }}
       CLIENT_ID: ${{ secrets.CLIENT_ID }}
       CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
-      SHAREPOINT_HOST: ${{ secrets.SHAREPOINT_HOST }}
-      SITE_PATH: ${{ secrets.SITE_PATH }}
-      INPUT_FOLDER: ${{ secrets.INPUT_FOLDER }}
-      OUTPUT_FOLDER: ${{ secrets.OUTPUT_FOLDER }}
+      ONEDRIVE_USER_ID: ${{ secrets.ONEDRIVE_USER_ID }}
+      ONEDRIVE_INPUT_INSTITUCIONAL_8H: ${{ secrets.INPUT_FOLDER_INSTITUCIONAL_8H }}
+      ONEDRIVE_INPUT_JARDINES_INTEGRALES: ${{ secrets.INPUT_FOLDER_JARDINES_INTEGRALES }}
+      ONEDRIVE_OUTPUT_FOLDER: ${{ secrets.OUTPUT_FOLDER }}
 
     steps:
       - uses: actions/checkout@v4
