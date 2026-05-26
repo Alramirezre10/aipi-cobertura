@@ -16,7 +16,7 @@ import pandas as pd
 # En local puedes definir AIPI_BASE_DIR. En GitHub Actions usa ./data por defecto.
 BASE_DIR = Path(os.getenv("AIPI_BASE_DIR", "data"))
 
-RAW_INSTITUCIONAL_8H = BASE_DIR / "INSTITUCIONAL_8h"
+RAW_INSTITUCIONAL_8H = BASE_DIR / "INSTITUCIONAL_8H"
 RAW_JARDINES_INTEGRALES = BASE_DIR / "JARDINES_INTEGRALES"
 OUTPUT_DIR = Path(os.getenv("AIPI_OUTPUT_DIR", "output"))
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
