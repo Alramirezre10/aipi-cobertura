@@ -1,9 +1,9 @@
 name: AIPI Cobertura
 
-on:
+"on":
   workflow_dispatch:
   schedule:
-    - cron: "0 10 * * *"  # 5:00 a. m. Colombia en UTC
+    - cron: "0 10 * * *"
 
 jobs:
   run:
