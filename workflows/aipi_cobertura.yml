@@ -1,1 +1,33 @@
 
+name: AIPI Cobertura
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 10 * * *"  # 5:00 a. m. Colombia en UTC
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    env:
+      TENANT_ID: ${{ secrets.TENANT_ID }}
+      CLIENT_ID: ${{ secrets.CLIENT_ID }}
+      CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+      SHAREPOINT_HOST: ${{ secrets.SHAREPOINT_HOST }}
+      SITE_PATH: ${{ secrets.SITE_PATH }}
+      INPUT_FOLDER: ${{ secrets.INPUT_FOLDER }}
+      OUTPUT_FOLDER: ${{ secrets.OUTPUT_FOLDER }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r app/requirements.txt
+
+      - name: Run process
+        run: python app/report_runner.py
