@@ -20,6 +20,7 @@ RAW_INSTITUCIONAL_8H = BASE_DIR / "INSTITUCIONAL_8H"
 RAW_JARDINES_INTEGRALES = BASE_DIR / "JARDINES_INTEGRALES"
 OUTPUT_DIR = Path(os.getenv("AIPI_OUTPUT_DIR", "output"))
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+DICCIONARIO_PATH = BASE_DIR / "DICCIONARIO.xlsx"
 
 COLUMNAS_ESTANDAR = [
     "numero_contrato",
@@ -47,6 +48,62 @@ COLUMNAS_TECNICAS = [
 # ============================================================
 # 1. FUNCIONES
 # ============================================================
+
+def aplicar_diccionario_sedes(
+    df: pd.DataFrame,
+    df_diccionario: pd.DataFrame
+) -> pd.DataFrame:
+    df = df.copy()
+    df["id_sede"] = df["id_sede"].astype(str).str.strip()
+
+    df = df.drop(columns=["nombre_sede", "modalidad", "comuna_sede"], errors="ignore")
+
+    df = df.merge(
+        df_diccionario,
+        on="id_sede",
+        how="left",
+        validate="many_to_one"
+    )
+
+    sedes_sin_diccionario = df[df["nombre_sede"].isna()]["id_sede"].drop_duplicates()
+
+    if len(sedes_sin_diccionario) > 0:
+        raise ValueError(
+            "Hay id_sede que no existen en el DICCIONARIO.xlsx: "
+            f"{sedes_sin_diccionario.tolist()}"
+        )
+
+    return df
+
+def leer_diccionario_sedes(path_diccionario: Path) -> pd.DataFrame:
+    if not path_diccionario.exists():
+        raise FileNotFoundError(f"No se encontró el diccionario: {path_diccionario}")
+
+    df_diccionario = pd.read_excel(path_diccionario, sheet_name="DICCIONARIO")
+
+    columnas_requeridas = [
+        "id_sede",
+        "nombre_sede",
+        "modalidad",
+        "comuna_sede",
+    ]
+
+    faltantes = [
+        col for col in columnas_requeridas
+        if col not in df_diccionario.columns
+    ]
+
+    if faltantes:
+        raise ValueError(
+            f"El diccionario tiene columnas faltantes: {faltantes}"
+        )
+
+    df_diccionario = df_diccionario[columnas_requeridas].copy()
+    df_diccionario["id_sede"] = df_diccionario["id_sede"].astype(str).str.strip()
+
+    df_diccionario = df_diccionario.drop_duplicates(subset=["id_sede"], keep="last")
+
+    return df_diccionario
 
 def extraer_fecha_corte(nombre_archivo: str) -> pd.Timestamp:
     """
@@ -88,19 +145,9 @@ def validar_columnas_estandar(df: pd.DataFrame, path_archivo: Path) -> bool:
         if col not in columnas_archivo
     ]
 
-    columnas_extra = [
-        col for col in columnas_archivo
-        if col not in COLUMNAS_ESTANDAR
-    ]
-
     if columnas_faltantes:
         raise ValueError(
             f"El archivo {path_archivo.name} tiene columnas faltantes: {columnas_faltantes}"
-        )
-
-    if columnas_extra:
-        print(
-            f"Advertencia: el archivo {path_archivo.name} tiene columnas extra: {columnas_extra}"
         )
 
     return True
@@ -158,6 +205,8 @@ def transformar_formato_largo(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def main() -> None:
+    df_diccionario = leer_diccionario_sedes(DICCIONARIO_PATH)
+    
     archivos_institucional_8h = listar_archivos_excel(RAW_INSTITUCIONAL_8H)
     archivos_jardines_integrales = listar_archivos_excel(RAW_JARDINES_INTEGRALES)
     archivos_totales = archivos_institucional_8h + archivos_jardines_integrales
@@ -174,6 +223,12 @@ def main() -> None:
         dfs.append(procesar_archivo(archivo))
 
     df_consolidado = pd.concat(dfs, ignore_index=True)
+
+    df_consolidado = aplicar_diccionario_sedes(
+        df_consolidado,
+        df_diccionario
+    )
+    
     df_consolidado = df_consolidado[COLUMNAS_ESTANDAR + COLUMNAS_TECNICAS]
     df_largo = transformar_formato_largo(df_consolidado)
 
