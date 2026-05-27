@@ -13,7 +13,7 @@ import pandas as pd
 # 0. CONFIGURACIÓN
 # ============================================================
 
-# En local puedes definir AIPI_BASE_DIR. En GitHub Actions usa ./data por defecto.
+# En local se puede definir AIPI_BASE_DIR. En GitHub Actions se usa ./data por defecto.
 BASE_DIR = Path(os.getenv("AIPI_BASE_DIR", "data"))
 
 RAW_INSTITUCIONAL_8H = BASE_DIR / "INSTITUCIONAL_8H"
