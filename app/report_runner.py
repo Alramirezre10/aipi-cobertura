@@ -19,8 +19,9 @@ def main():
     )
 
     print("Descargando diccionario...")
+    
     download_file(
-        os.environ["ONEDRIVE_INPUT_DICCIONARIO"],
+        os.environ["INPUT_FILE_DICCIONARIO"],
         Path("data/AIPI/DICCIONARIO.xlsx"),
     )
 
