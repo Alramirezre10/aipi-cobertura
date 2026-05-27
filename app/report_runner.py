@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from graph_client import download_folder_xlsx, upload_folder
+from graph_client import download_folder_xlsx, upload_folder, download_file
 from cobertura import main as run_cobertura
 
 
@@ -16,6 +16,12 @@ def main():
     download_folder_xlsx(
         os.environ["ONEDRIVE_INPUT_JARDINES_INTEGRALES"],
         Path("data/JARDINES_INTEGRALES"),
+    )
+
+    print("Descargando diccionario...")
+    download_file(
+        os.environ["ONEDRIVE_INPUT_DICCIONARIO"],
+        Path("data/AIPI/DICCIONARIO.xlsx"),
     )
 
     print("Ejecutando proceso de cobertura...")
