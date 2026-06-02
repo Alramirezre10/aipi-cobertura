@@ -49,12 +49,21 @@ COLUMNAS_TECNICAS = [
 # 1. FUNCIONES
 # ============================================================
 
+def normalizar_id_sede(serie: pd.Series) -> pd.Series:
+    return (
+        pd.to_numeric(serie, errors="coerce")
+        .astype("Int64")
+        .astype(str)
+        .str.strip()
+        .replace("<NA>", pd.NA)
+    )
+
 def aplicar_diccionario_sedes(
     df: pd.DataFrame,
     df_diccionario: pd.DataFrame
 ) -> pd.DataFrame:
     df = df.copy()
-    df["id_sede"] = df["id_sede"].astype(str).str.strip()
+    df["id_sede"] = normalizar_id_sede(df["id_sede"])
 
     df = df.drop(columns=["nombre_sede", "modalidad", "comuna_sede"], errors="ignore")
 
@@ -99,7 +108,7 @@ def leer_diccionario_sedes(path_diccionario: Path) -> pd.DataFrame:
         )
 
     df_diccionario = df_diccionario[columnas_requeridas].copy()
-    df_diccionario["id_sede"] = df_diccionario["id_sede"].astype(str).str.strip()
+    df_diccionario["id_sede"] = normalizar_id_sede(df_diccionario["id_sede"])
 
     df_diccionario = df_diccionario.drop_duplicates(subset=["id_sede"], keep="last")
 
