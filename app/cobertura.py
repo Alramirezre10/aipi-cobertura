@@ -66,29 +66,15 @@ def aplicar_diccionario_sedes(
     df["id_sede"] = normalizar_id_sede(df["id_sede"])
 
     df = df.drop(columns=["nombre_sede", "modalidad", "comuna_sede"], errors="ignore")
-
-
-    # ============================================================
-    # DEBUG ID_SEDE VACÍOS
-    # ============================================================
-
+    # ======================
+    # DEBUG ID_SEDE VACIOS
+    # ======================
     df_nan = df[df["id_sede"].isna()].copy()
     
     if len(df_nan) > 0:
-        print("\n===== REGISTROS CON ID_SEDE VACÍO =====")
-        print(
-            df_nan[
-                [
-                    "archivo_origen",
-                    "numero_contrato",
-                    "entidad",
-                    "fecha_corte",
-                    "id_sede"
-                ]
-            ]
-            .drop_duplicates()
-            .sort_values("archivo_origen")
-        )
+    
+        print("\n===== ARCHIVOS PROBLEMÁTICOS =====")
+        print(df_nan["archivo_origen"].unique())
     
         raise ValueError(
             f"Se encontraron {len(df_nan)} registros con id_sede vacío."
