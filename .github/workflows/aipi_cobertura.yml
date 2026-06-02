@@ -31,3 +31,26 @@ jobs:
 
       - name: Run process
         run: python app/report_runner.py
+        
+      - name: Notificar error por Gmail
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.GMAIL_USER }}
+          password: ${{ secrets.GMAIL_APP_PASSWORD }}
+          subject: "❌ Error en GitHub Actions - AIPI Cobertura"
+          to: ${{ secrets.GMAIL_USER }}
+          from: ${{ secrets.GMAIL_USER }}
+          body: |
+            Falló el proceso automático de AIPI Cobertura.
+
+            Repositorio: ${{ github.repository }}
+            Workflow: ${{ github.workflow }}
+            Ejecución: #${{ github.run_number }}
+            Rama: ${{ github.ref_name }}
+
+            Ver detalle:
+            https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
