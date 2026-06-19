@@ -50,19 +50,49 @@ def list_folder_files(onedrive_folder: str) -> list[dict]:
     return response.json().get("value", [])
 
 
-def download_file(onedrive_file_path: str, local_file_path: Path) -> None:
-    headers = get_headers()
+def download_file(download_url: str, local_file_path: str) -> None:
+    try:
+        print(
+            f"Iniciando descarga: {local_file_path}",
+            flush=True,
+        )
 
-    url = (
-        f"{GRAPH_BASE_URL}/users/{os.environ['ONEDRIVE_USER_ID']}"
-        f"/drive/root:/{onedrive_file_path}:/content"
-    )
+        response = requests.get(
+            download_url,
+            timeout=120,
+        )
 
-    response = requests.get(url, headers=headers)
-    response.raise_for_status()
+        response.raise_for_status()
 
-    local_file_path.parent.mkdir(parents=True, exist_ok=True)
-    local_file_path.write_bytes(response.content)
+        with open(local_file_path, "wb") as file:
+            file.write(response.content)
+
+        print(
+            f"Descarga completada: {local_file_path}",
+            flush=True,
+        )
+
+    except requests.HTTPError as exc:
+        status_code = exc.response.status_code if exc.response else "desconocido"
+
+        print(
+            f"ERROR descargando archivo: {local_file_path}",
+            flush=True,
+        )
+        print(
+            f"Código HTTP: {status_code}",
+            flush=True,
+        )
+        print(
+            f"URL final: {response.url}",
+            flush=True,
+        )
+        print(
+            f"Respuesta: {response.text[:500]}",
+            flush=True,
+        )
+
+        raise
 
 
 def download_folder_xlsx(onedrive_folder: str, local_folder: Path) -> None:
