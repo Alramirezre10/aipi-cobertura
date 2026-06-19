@@ -50,33 +50,64 @@ def list_folder_files(onedrive_folder: str) -> list[dict]:
     return response.json().get("value", [])
 
 
-def download_file(download_url: str, local_file_path: str) -> None:
-    try:
-        print(
-            f"Iniciando descarga: {local_file_path}",
-            flush=True,
-        )
+def download_file(
+    item_id: str,
+    local_file_path: Path,
+    remote_file_path: str,
+) -> None:
+    headers = get_headers()
 
+    url = (
+        f"{GRAPH_BASE_URL}/users/{os.environ['ONEDRIVE_USER_ID']}"
+        f"/drive/items/{item_id}/content"
+    )
+
+    print(
+        f"Iniciando descarga: {remote_file_path}",
+        flush=True,
+    )
+
+    try:
         response = requests.get(
-            download_url,
+            url,
+            headers=headers,
             timeout=120,
+            allow_redirects=True,
         )
 
         response.raise_for_status()
-
-        with open(local_file_path, "wb") as file:
-            file.write(response.content)
+        local_file_path.write_bytes(response.content)
 
         print(
             f"Descarga completada: {local_file_path}",
             flush=True,
         )
 
-    except requests.HTTPError as exc:
-        status_code = exc.response.status_code if exc.response else "desconocido"
+    except requests.RequestException as exc:
+        response = getattr(exc, "response", None)
+
+        status_code = (
+            response.status_code
+            if response is not None
+            else "sin respuesta HTTP"
+        )
+
+        detail = (
+            response.text[:500]
+            if response is not None
+            else str(exc)
+        )
 
         print(
-            f"ERROR descargando archivo: {local_file_path}",
+            f"ERROR descargando: {remote_file_path}",
+            flush=True,
+        )
+        print(
+            f"Item ID: {item_id}",
+            flush=True,
+        )
+        print(
+            f"Destino: {local_file_path}",
             flush=True,
         )
         print(
@@ -84,19 +115,20 @@ def download_file(download_url: str, local_file_path: str) -> None:
             flush=True,
         )
         print(
-            f"URL final: {response.url}",
-            flush=True,
-        )
-        print(
-            f"Respuesta: {response.text[:500]}",
+            f"Detalle: {detail}",
             flush=True,
         )
 
         raise
 
-
-def download_folder_xlsx(onedrive_folder: str, local_folder: Path) -> None:
-    local_folder.mkdir(parents=True, exist_ok=True)
+def download_folder_xlsx(
+    onedrive_folder: str,
+    local_folder: Path,
+) -> None:
+    local_folder.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
     files = list_folder_files(onedrive_folder)
 
@@ -109,27 +141,20 @@ def download_folder_xlsx(onedrive_folder: str, local_folder: Path) -> None:
         if name.startswith("~$"):
             continue
 
-        onedrive_file_path = f"{onedrive_folder}/{name}"
+        remote_file_path = f"{onedrive_folder}/{name}"
         local_file_path = local_folder / name
-        download_url = item.get("@microsoft.graph.downloadUrl")
-        
-        if not download_url:
-            raise RuntimeError(
-                f"Microsoft Graph no devolvió URL de descarga para: "
-                f"{onedrive_file_path}"
-            )
-        
+
         print(
-            f"Descargando: {onedrive_file_path} -> {local_file_path}",
+            f"Descargando: {remote_file_path} "
+            f"-> {local_file_path}",
             flush=True,
         )
-        
-        download_file(
-            download_url=download_url,
-            local_file_path=local_file_path,
-            onedrive_file_path=onedrive_file_path,
-        )
 
+        download_file(
+            item_id=item["id"],
+            local_file_path=local_file_path,
+            remote_file_path=remote_file_path,
+        )
 
 def upload_file(local_file_path: Path, onedrive_folder: str) -> None:
     headers = get_headers()
