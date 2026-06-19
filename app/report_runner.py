@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from graph_client import download_folder_xlsx, upload_folder, download_file
+from graph_client import download_file_by_path, download_folder_xlsx, upload_folder, download_file
 from cobertura import main as run_cobertura
 
 
@@ -20,9 +20,9 @@ def main():
 
     print("Descargando diccionario...")
     
-    download_file(
-        os.environ["INPUT_FILE_DICCIONARIO"],
-        Path("data/AIPI/DICCIONARIO.xlsx"),
+    download_file_by_path(
+        onedrive_file_path=os.environ["INPUT_FILE_DICCIONARIO"],
+        local_file_path=Path("data/DICCIONARIO.xlsx"),
     )
 
     print("Ejecutando proceso de cobertura...")
