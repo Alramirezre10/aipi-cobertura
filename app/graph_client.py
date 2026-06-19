@@ -121,6 +121,80 @@ def download_file(
 
         raise
 
+def download_file_by_path(
+    onedrive_file_path: str,
+    local_file_path: Path,
+) -> None:
+    headers = get_headers()
+
+    clean_path = onedrive_file_path.strip("/")
+
+    url = (
+        f"{GRAPH_BASE_URL}/users/{os.environ['ONEDRIVE_USER_ID']}"
+        f"/drive/root:/{clean_path}:/content"
+    )
+
+    print(
+        f"Iniciando descarga: {onedrive_file_path}",
+        flush=True,
+    )
+
+    try:
+        response = requests.get(
+            url,
+            headers=headers,
+            timeout=120,
+            allow_redirects=True,
+        )
+
+        response.raise_for_status()
+
+        local_file_path.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        local_file_path.write_bytes(response.content)
+
+        print(
+            f"Descarga completada: {local_file_path}",
+            flush=True,
+        )
+
+    except requests.RequestException as exc:
+        response = getattr(exc, "response", None)
+
+        status_code = (
+            response.status_code
+            if response is not None
+            else "sin respuesta HTTP"
+        )
+
+        detail = (
+            response.text[:500]
+            if response is not None
+            else str(exc)
+        )
+
+        print(
+            f"ERROR descargando: {onedrive_file_path}",
+            flush=True,
+        )
+        print(
+            f"Destino: {local_file_path}",
+            flush=True,
+        )
+        print(
+            f"Código HTTP: {status_code}",
+            flush=True,
+        )
+        print(
+            f"Detalle: {detail}",
+            flush=True,
+        )
+
+        raise
+
 def download_folder_xlsx(
     onedrive_folder: str,
     local_folder: Path,
