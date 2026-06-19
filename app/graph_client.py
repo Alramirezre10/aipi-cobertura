@@ -111,9 +111,24 @@ def download_folder_xlsx(onedrive_folder: str, local_folder: Path) -> None:
 
         onedrive_file_path = f"{onedrive_folder}/{name}"
         local_file_path = local_folder / name
-
-        print(f"Descargando: {onedrive_file_path} -> {local_file_path}")
-        download_file(onedrive_file_path, local_file_path)
+        download_url = item.get("@microsoft.graph.downloadUrl")
+        
+        if not download_url:
+            raise RuntimeError(
+                f"Microsoft Graph no devolvió URL de descarga para: "
+                f"{onedrive_file_path}"
+            )
+        
+        print(
+            f"Descargando: {onedrive_file_path} -> {local_file_path}",
+            flush=True,
+        )
+        
+        download_file(
+            download_url=download_url,
+            local_file_path=local_file_path,
+            onedrive_file_path=onedrive_file_path,
+        )
 
 
 def upload_file(local_file_path: Path, onedrive_folder: str) -> None:
