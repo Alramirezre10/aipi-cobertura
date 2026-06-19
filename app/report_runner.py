@@ -22,7 +22,7 @@ def main():
     
     download_file_by_path(
         onedrive_file_path=os.environ["INPUT_FILE_DICCIONARIO"],
-        local_file_path=Path("data/DICCIONARIO.xlsx"),
+        local_file_path=Path("data/AIPI/DICCIONARIO.xlsx"),
     )
 
     print("Ejecutando proceso de cobertura...")
